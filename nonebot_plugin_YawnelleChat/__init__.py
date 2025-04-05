@@ -1,5 +1,7 @@
 from nonebot import logger, require
 from nonebot.plugin import PluginMetadata, inherit_supported_adapters
+from openai import (OpenAI)
+
 
 require("nonebot_plugin_waiter")
 require("nonebot_plugin_uninfo")
@@ -9,15 +11,15 @@ require("nonebot_plugin_apscheduler")
 from .config import Config
 
 __plugin_meta__ = PluginMetadata(
-    name="名称",
-    description="描述",
+    name="YawnelleChat",
+    description="适用于多人群聊的ai聊天插件",
     usage="用法",
     type="application",  # library
     homepage="https://github.com/Wohaokunr/nonebot-plugin-YawnelleChat",
     config=Config,
     supported_adapters=inherit_supported_adapters("nonebot_plugin_alconna", "nonebot_plugin_uninfo"),
     # supported_adapters={"~onebot.v11"}, # 仅 onebot 应取消注释
-    extra={"author": "Wohaokunr <your@mail.com>"},
+    extra={"author": "Wohaokunr <Wohaokunr@gmail.com>"},
 )
 
 from arclet.alconna import Alconna, Args, Arparma, Option, Subcommand
