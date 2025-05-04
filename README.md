@@ -27,6 +27,8 @@
 
 ## 📖 介绍
 
+<img src="https://raw.githubusercontent.com/Wohaokunr/nonebot-plugin-YawnelleChat/refs/heads/master/file_000000003a7061f7baf3123399fefa73.png" />
+
 NoneBot2 插件 YawnelleChat 是一个基于 OpenAI API 的智能群聊助手插件。它能够：
 
 - 🤖 提供智能群聊对话功能
