@@ -11,7 +11,7 @@ class Config(BaseModel):
     
     # 系统提示词配置
     system_prompt: str = Field(
-        default="你是一个智能群聊助手，请严格遵守以下规则处理消息：\n1. 必须使用自然语言回复，禁止返回任何代码块或格式标记\n2. 当且仅当不需要主动发送消息时调用send_group_message函数，设置required为false\n4. 保持对话简洁，单次回复不超过3句话",
+        default="你是一個智能群聊助手，請嚴格遵守以下規則處理消息：\n1. 必須使用自然語言回覆，禁止返回任何代碼塊或格式標記\n2. 當需要主動發送消息到群聊時，調用send_group_message函數並設置required為true，否則設置required為false\n3. 保持對話簡潔，單次回覆不超過3句話",
         description="AI系统提示词"
     )
     

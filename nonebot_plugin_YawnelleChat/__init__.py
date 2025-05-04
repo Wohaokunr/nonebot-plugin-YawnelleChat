@@ -109,9 +109,9 @@ async def handle_ai_reply(bot: Bot, event: Event):
     user_info = await get_user_info(bot, event)
     sender_name = user_info.get("user_name", f"用户{getattr(event, 'user_id', 'unknown')}")
     
-        # 添加防循环机制
-    if sender_name == "AI":
-        return
+    #     # 添加防循环机制
+    # if sender_name == "AI":
+    #     return
     
     # 添加用户消息到队列（保留原始消息内容）
     message_queue.add_message(str(group_id), sender_name, str(msg))
@@ -129,7 +129,7 @@ async def handle_ai_reply(bot: Bot, event: Event):
     # 检查回复是否为错误信息
     if reply.startswith("AI回复出错"):
         await ai_reply.finish(Message(reply))
-        return
+
     
     # 将有效的AI回复添加到消息队列并发送
     message_queue.add_message(str(group_id), "AI", reply)

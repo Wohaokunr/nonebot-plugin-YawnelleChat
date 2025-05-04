@@ -74,10 +74,10 @@ class AIChatHandler:
     
     async def get_ai_response(self, history: List[Message]) -> Optional[str]:
         """获取AI回复
-        
+
         Args:
             history: 历史消息列表
-            
+
         Returns:
             AI回复内容，如果出错则返回None
         """
@@ -85,10 +85,10 @@ class AIChatHandler:
             self._initialize_client()
             if not self._client:
                 return "AI聊天功能未正确配置，请联系管理员设置OpenAI API密钥"
-        
+
         try:
             messages = self._build_messages(history)
-            
+
             # 调用OpenAI API
             response = self._client.chat.completions.create(
                 model=plugin_config.openai_model,
@@ -120,7 +120,7 @@ class AIChatHandler:
                 ],
                 tool_choice="auto",
             )
-            
+
             # 记录完整的API响应，用于调试
             logger.debug(f"OpenAI API响应: {response}")
 
@@ -129,15 +129,15 @@ class AIChatHandler:
             if not hasattr(message, 'tool_calls') or not message.tool_calls:
                 # 处理普通回复并过滤格式
                 reply = message.content
-                return reply.replace('```', '').replace('`', '').strip() if reply else None
+                # return reply.replace('```', '').replace('`', '').strip() if reply else None
 
             logger.info(f"检测到工具调用: {message.tool_calls}")
             tool_call = message.tool_calls[0]
 
-            # 如果不是send_group_message函数调用，返回原始消息
+            # 如果不是send_group_message函数调用，返回None
             if tool_call.type != "function" or tool_call.function.name != "send_group_message":
                 logger.warning(f"未知的工具调用: {tool_call.type} - {tool_call.function.name}")
-                return message.content
+                return None
 
             try:
                 # 解析并验证函数参数
@@ -149,22 +149,23 @@ class AIChatHandler:
                 if not isinstance(required, bool):
                     required = str(required).lower() in ['true', '1', 'yes', 'y']
 
-                # 如果required为false或消息内容为空，返回原始消息或默认回复
+                # 如果required为false或消息内容为空，返回None
                 if not required or not message_content:
                     return None
-                    return message.content or "我明白了，请继续。"
 
                 return message_content
 
             except Exception as e:
                 logger.error(f"处理工具调用失败: {e}")
                 return message.content
-            
+
+
+
             # 处理普通回复并过滤格式
-            reply = response.choices[0].message.content
-            # 移除代码块和特殊符号
-            reply = reply.replace('```', '').replace('`', '').strip()
-            return reply if reply else None
+            # reply = response.choices[0].message.content
+            # # 移除代码块和特殊符号
+            # reply = reply.replace('```', '').replace('`', '').strip()
+            # return reply if reply else None
         except Exception as e:
             logger.error(f"获取AI回复失败: {e}")
             return f"AI回复出错: {str(e)}"
