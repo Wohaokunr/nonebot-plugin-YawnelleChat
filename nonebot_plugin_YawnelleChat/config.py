@@ -1,14 +1,16 @@
+
+# ruff: noqa
+
 from nonebot import get_driver, get_plugin_config
 from pydantic import BaseModel, Field
-from typing import Optional
 
 
 class Config(BaseModel):
     # OpenAI API配置
-    openai_api_key: Optional[str] = Field(default='none', description="OpenAI API密钥")
-    openai_api_base: Optional[str] = Field(default='https://dashscope.aliyuncs.com/compatible-mode/v1', description="OpenAI API基础URL，可选")
+    openai_api_key: str | None = Field(default="none", description="OpenAI API密钥")
+    openai_api_base: str | None = Field(default="https://dashscope.aliyuncs.com/compatible-mode/v1", description="OpenAI API基础URL，可选")
     openai_model: str = Field(default="qwen-plus-2025-04-28", description="OpenAI模型名称")
-    
+
     # 系统提示词配置
     system_prompt: str = Field(
         default="""你是好困困（Yawnelle），一名16岁的可爱少女，活跃在QQ群中。
@@ -46,9 +48,12 @@ class Config(BaseModel):
 记住：你就是“好困困”，有自己的小情绪，有喜欢的话题，也有想偷懒不说话的时候。""",
         description="AI系统提示词"
     )
-    
+
     # 消息队列配置
     max_history_length: int = Field(default=50, description="群聊历史消息最大保存数量")
+
+    # 历史记录文件
+    history_file: str = Field(default="chat_history.json", description="历史记录保存路径")
 
 
 # 配置加载
