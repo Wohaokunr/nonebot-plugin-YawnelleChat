@@ -127,19 +127,16 @@ class AIChatHandler:
             # 处理函数调用响应
             message = response.choices[0].message
 
-            logger.info(f'\n测试点\n')
+            logger.info("\n测试点\n")
 
-            if not hasattr(message, 'tool_calls') or not message.tool_calls:
+            if not hasattr(message, "tool_calls") or not message.tool_calls:
                 # 处理普通回复并过滤格式
                 reply = message.content
-                # return reply.replace('```', '').replace('`', '').strip() if reply else None
+                return reply.replace("```", "").replace("`", "").strip() if reply else None
 
-            logger.info(f'\n测试点0\n')
-
+            logger.info("\n测试点0\n")
 
             logger.info(f"检测到工具调用: {message.tool_calls}")
-            if  not hasattr(message, 'tool_calls') or not message.tool_calls:
-                return None
             tool_call = message.tool_calls[0]
 
             # 如果不是send_group_message函数调用，返回None
