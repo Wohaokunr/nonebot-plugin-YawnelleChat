@@ -35,6 +35,9 @@ NoneBot2 插件 YawnelleChat 是一个基于 OpenAI API 的智能群聊助手插
 - 💬 自动维护对话历史记录
 - 🎯 支持自定义系统提示词
 - ⚡ 支持自定义 API 接口
+- 💾 历史记录持久化保存
+- 🔧 支持群级别模型和提示词配置
+- ⏰ 定时向群聊推送提醒
 
 ## 💿 安装
 
@@ -100,6 +103,7 @@ NoneBot2 插件 YawnelleChat 是一个基于 OpenAI API 的智能群聊助手插
 | openai_model | 否 | qwen2.5-vl-32b-instruct | OpenAI模型名称 |
 | system_prompt | 否 | 预设的系统提示词 | AI系统提示词 |
 | max_history_length | 否 | 3 | 群聊历史消息最大保存数量 |
+| history_file | 否 | chat_history.json | 历史记录文件路径 |
 
 ## 🎉 使用
 ### 指令表
@@ -107,6 +111,7 @@ NoneBot2 插件 YawnelleChat 是一个基于 OpenAI API 的智能群聊助手插
 | :---: | :---: | :---: | :---: | :------: |
 | /chat [消息] | 群员 | 否 | 群聊 | 与AI助手对话 |
 | @机器人 [消息] | 群员 | 是 | 群聊 | 与AI助手对话 |
+| /chat_config <model|prompt> <值> | 群管理员 | 否 | 群聊 | 设置群模型或提示词 |
 
 ### 🎨 效果图
 如果有效果图的话
