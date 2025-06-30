@@ -1,39 +1,20 @@
+from __future__ import annotations
+
 import json
 
 from nonebot import logger
-from openai import OpenAI
 
 from .config import plugin_config
 from .group_config_manager import group_config_manager
 from .message_queue import Message
+from .openai_client import OpenAIClient
 
 
 class AIChatHandler:
     """AI聊天处理类，负责与OpenAI API交互"""
 
-    def __init__(self):
-        # 初始化OpenAI客户端
-        self._client = None
-        self._initialize_client()
-
-    def _initialize_client(self) -> None:
-        """初始化OpenAI客户端"""
-        try:
-            api_key = plugin_config.openai_api_key
-            api_base = plugin_config.openai_api_base
-
-            if not api_key:
-                logger.error("OpenAI API密钥未配置，AI聊天功能将无法使用")
-                return
-
-            client_kwargs = {"api_key": api_key}
-            if api_base:
-                client_kwargs["base_url"] = api_base
-
-            self._client = OpenAI(**client_kwargs)
-            logger.info("OpenAI客户端初始化成功")
-        except Exception as e:
-            logger.error(f"OpenAI客户端初始化失败: {e}")
+    def __init__(self) -> None:
+        self._client = OpenAIClient()
 
     def _build_messages(self, history: list[Message], system_prompt: str) -> list[dict[str, str]]:
         """构建OpenAI API所需的消息格式
@@ -45,9 +26,7 @@ class AIChatHandler:
             OpenAI API所需的消息列表
         """
         # 添加系统提示词
-        messages = [
-            {"role": "system", "content": system_prompt}
-        ]
+        messages = [{"role": "system", "content": system_prompt}]
 
         # 如果历史消息为空，返回带有默认用户消息的列表
         if not history:
@@ -56,8 +35,8 @@ class AIChatHandler:
 
         # 添加历史消息
         has_user_message = False
-        for sender, content in history:
-            # 用户消息
+        for item in history:
+            sender, content = item.sender, item.content
             if sender != "AI":
                 has_user_message = True
                 # 添加用户名称到消息内容
@@ -89,10 +68,7 @@ class AIChatHandler:
         Returns:
             AI回复内容，如果出错则返回None
         """
-        if not self._client:
-            self._initialize_client()
-            if not self._client:
-                return "AI聊天功能未正确配置，请联系管理员设置OpenAI API密钥"
+        response = None
 
         try:
             system_prompt = group_config_manager.get(group_id, "system_prompt", plugin_config.system_prompt)
@@ -100,7 +76,7 @@ class AIChatHandler:
             messages = self._build_messages(history, system_prompt)
 
             # 调用OpenAI API
-            response = self._client.chat.completions.create(
+            response = await self._client.chat(
                 model=model,
                 messages=messages,
                 temperature=0.7,
@@ -116,47 +92,32 @@ class AIChatHandler:
                                 "properties": {
                                     "required": {
                                         "type": "boolean",
-                                        "description": "是否必须发送此消息，true表示需要立即发送，false表示不需要发送"
+                                        "description": "是否必须发送此消息，true表示需要立即发送，false表示不需要发送",
                                     },
-                                    "message_content": {
-                                        "type": "string",
-                                        "description": "要发送的消息内容"
-                                    }
+                                    "message_content": {"type": "string", "description": "要发送的消息内容"},
                                 },
-                                "required": ["required", "message_content"]
-                            }
-                        }
+                                "required": ["required", "message_content"],
+                            },
+                        },
                     }
                 ],
                 tool_choice="auto",
             )
 
-            # 记录完整的API响应，用于调试
             logger.debug(f"OpenAI API响应: {response}")
 
-            # 处理函数调用响应
             message = response.choices[0].message
 
-            logger.info("\n测试点\n")
-
-            if not hasattr(message, "tool_calls") or not message.tool_calls:
-                # 处理普通回复并过滤格式
+            if not getattr(message, "tool_calls", None):
                 _ = message.content
-
-            logger.info("\n测试点0\n")
-
-
             logger.info(f"检测到工具调用: {message.tool_calls}")
-            if  not hasattr(message, "tool_calls") or not message.tool_calls:
+            if not getattr(message, "tool_calls", None):
                 return None
             tool_call = message.tool_calls[0]
 
-            # 如果不是send_group_message函数调用，返回None
             if tool_call.type != "function" or tool_call.function.name != "send_group_message":
                 logger.warning(f"未知的工具调用: {tool_call.type} - {tool_call.function.name}")
                 return None
-
-            logger.info("\n测试点1\n")
 
             try:
                 # 解析并验证函数参数
@@ -178,8 +139,6 @@ class AIChatHandler:
                 logger.error(f"处理工具调用失败: {e}")
                 return None
 
-
-
             # 处理普通回复并过滤格式
             # reply = response.choices[0].message.content
             # # 移除代码块和特殊符号
@@ -188,6 +147,7 @@ class AIChatHandler:
         except Exception as e:
             logger.error(f"获取AI回复失败: {e}")
             return f"AI回复出错: {e!s}"
+
 
 # 全局AI聊天处理实例
 ai_chat_handler = AIChatHandler()

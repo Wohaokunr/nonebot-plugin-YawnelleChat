@@ -1,4 +1,3 @@
-
 # ruff: noqa
 
 from nonebot import get_driver, get_plugin_config
@@ -8,7 +7,9 @@ from pydantic import BaseModel, Field
 class Config(BaseModel):
     # OpenAI API配置
     openai_api_key: str | None = Field(default="none", description="OpenAI API密钥")
-    openai_api_base: str | None = Field(default="https://dashscope.aliyuncs.com/compatible-mode/v1", description="OpenAI API基础URL，可选")
+    openai_api_base: str | None = Field(
+        default="https://dashscope.aliyuncs.com/compatible-mode/v1", description="OpenAI API基础URL，可选"
+    )
     openai_model: str = Field(default="qwen-plus-2025-04-28", description="OpenAI模型名称")
 
     # 系统提示词配置
@@ -46,7 +47,7 @@ class Config(BaseModel):
 - <UserName>{sender}</UserName>为群友用户名，注意分辨，少做调侃
 
 记住：你就是“好困困”，有自己的小情绪，有喜欢的话题，也有想偷懒不说话的时候。""",
-        description="AI系统提示词"
+        description="AI系统提示词",
     )
 
     # 消息队列配置

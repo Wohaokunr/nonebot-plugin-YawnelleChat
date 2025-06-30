@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from nonebot import get_driver, logger, on_command, on_message
 from nonebot.adapters import Bot, Event
 from nonebot.adapters.onebot.v11 import GROUP, Message
@@ -8,6 +10,8 @@ from .ai_chat import ai_chat_handler
 from .config import Config
 from .group_config_manager import group_config_manager
 from .message_queue import message_queue
+
+__all__ = ["ai_chat_handler", "ai_reply", "chat", "chat_config", "pip"]
 
 __plugin_meta__ = PluginMetadata(
     name="YawnelleChat",
@@ -21,6 +25,17 @@ __plugin_meta__ = PluginMetadata(
 )
 
 
+# 简单的演示命令，供测试使用
+pip = on_message(rule=lambda event: event.get_plaintext().startswith("pip"), permission=GROUP, priority=5)
+
+
+@pip.handle()
+async def _(event: Event):
+    if "nonebot2" in event.get_plaintext():
+        await pip.finish(Message("nonebot2"))
+    await pip.finish()
+
+
 # 定义命令处理器
 chat = on_message(rule=lambda event: event.get_plaintext().startswith("/chat"), permission=GROUP, priority=10)
 chat_config = on_command("chat_config", permission=GROUP, priority=10)
@@ -32,6 +47,7 @@ driver = get_driver()
 scheduler = getattr(driver, "scheduler", None)
 
 if scheduler:
+
     @scheduler.scheduled_job("cron", hour=9, minute=0)
     async def _morning_push():
         for bot in driver.bots.values():
@@ -81,8 +97,6 @@ async def handle_chat(bot: Bot, event: Event, state: T_State):
     # 显示帮助信息
     await chat.finish(Message("使用方法：\n- @机器人 [消息]：与AI对话\n- /chat -c：清空当前群聊的消息历史"))
 
-
-
     # 获取群聊ID和用户ID
     group_id = getattr(event, "group_id", None)
     user_id = getattr(event, "user_id", None)
@@ -127,6 +141,7 @@ async def get_user_info(bot: Bot, event: Event) -> dict:
         logger.error(f"获取用户信息失败: {e}")
         return {"user_name": f"用户{user_id}"}
 
+
 @ai_reply.handle()
 async def handle_ai_reply(bot: Bot, event: Event):
     # 获取群聊ID
@@ -163,7 +178,6 @@ async def handle_ai_reply(bot: Bot, event: Event):
     # 检查回复是否为错误信息
     if reply.startswith("AI回复出错"):
         await ai_reply.finish(Message(reply))
-
 
     # 将有效的AI回复添加到消息队列并发送
     message_queue.add_message(str(group_id), "AI", reply)
