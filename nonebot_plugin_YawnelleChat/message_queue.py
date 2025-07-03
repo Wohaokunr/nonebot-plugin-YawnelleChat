@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from collections import deque
+from dataclasses import dataclass
 import json
 from pathlib import Path
 
@@ -6,8 +9,12 @@ from nonebot import logger
 
 from .config import plugin_config
 
-# 消息类型定义
-Message = tuple[str, str]  # (发送者, 消息内容)
+
+@dataclass
+class Message:
+    sender: str
+    content: str
+
 
 class GroupMessageQueue:
     """群聊消息队列管理类"""
@@ -25,19 +32,16 @@ class GroupMessageQueue:
         try:
             data = json.loads(self._history_file.read_text(encoding="utf-8"))
             for gid, msgs in data.items():
-                dq = deque(maxlen=self._max_length)
+                dq: deque[Message] = deque(maxlen=self._max_length)
                 for sender, content in msgs:
-                    dq.append((sender, content))
+                    dq.append(Message(sender, content))
                 self._group_queues[gid] = dq
         except Exception as e:
             logger.error(f"加载历史记录失败: {e}")
 
     def _save_history(self) -> None:
         try:
-            data = {
-                gid: list(queue)
-                for gid, queue in self._group_queues.items()
-            }
+            data = {gid: [(msg.sender, msg.content) for msg in queue] for gid, queue in self._group_queues.items()}
             self._history_file.write_text(
                 json.dumps(data, ensure_ascii=False),
                 encoding="utf-8",
@@ -56,7 +60,7 @@ class GroupMessageQueue:
         if group_id not in self._group_queues:
             self._group_queues[group_id] = deque(maxlen=self._max_length)
 
-        self._group_queues[group_id].append((sender, content))
+        self._group_queues[group_id].append(Message(sender, content))
         logger.debug(f"Added message to group {group_id}: {sender}: {content}")
         self._save_history()
 
@@ -87,6 +91,7 @@ class GroupMessageQueue:
     def get_groups(self) -> list[str]:
         """返回已有记录的群聊ID列表"""
         return list(self._group_queues.keys())
+
 
 # 全局消息队列实例
 message_queue = GroupMessageQueue()
